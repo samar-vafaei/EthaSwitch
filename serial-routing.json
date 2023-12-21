@@ -20,5 +20,6 @@
 		     "provider_name":"Odine",
 		     "provider_rate":"0.01",
 		     "tech_prefix":"7676"}],
-	 "routing_model":"priority"}
+	 "routing_model":"priority"
+	}
 }

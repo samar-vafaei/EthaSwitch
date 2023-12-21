@@ -1,44 +1,45 @@
++++++++++++++++++++++++
++    CDR fields:      +
++++++++++++++++++++++++
 
-    start_time: $Ts ---> INVITE
+
+dr_rules table ---> mathematics relation ---> join customer and provider
+
+
+    start_time: $Ts ---> INVITE 
     alert_time: $Ts ---> 180 Ringing
     connect_time: $Ts ---> event[dialog:start] (200 OK)
     disconnect_time: $Ts ---> event[dialog:stop] (BYE)
     destination_name: $tU
-
-    # left-hand side
-    # before do-routing()
-    customer:
-        call_id: $dlg(callid)
-        name
-        id
-        epgroup
-        destination_prefix
-        signalling_ip
-        country_name
-        destination_name
-        ani_number: $fU
-        destination_number
-        disconnect_cause: $rs
-
-    # right-hand side
-    # after do-routing()
-    provider:
-        call_id: $ci
-        signalling_ip: $
-        name
-        id
-        epgroup
-        tech_prefix
-        rate
-        ani_number: $fU
-        destination_number
-        disconnect_cause: $rs
+    ani_number: $fU
+    destination_number
+    destination_prefix 
+    disconnect_cause: $rs
+    call_id: $dlg(callid)/$ci
+    signalling_ip: LOCAL_IP ---> Soft Switch IP address
+    media_ip: SDP ---> RTPEngine IP address
+    
+    # left-hand side   
+    customer (dr_groups table):        
+        name  ---> username
+        id  ---> groupid
+        ip ---> domain
+        epgroup ---> description              
+        country_name  ---> description
+                
+    # right-hand side   
+    provider (dr_gateways table):
+        name ---> attrs
+        id ---> type
+        ip ---> address
+        epgroup ---> attrs
+        tech_prefix ---> pri-prefix
+        rate ---> attrs
+        
 
 
 
-dr_rules table ---> dr_rules
-dr_gateways table ---> provider
-dr_groups table ---> customer 
+ 
 
         
 
