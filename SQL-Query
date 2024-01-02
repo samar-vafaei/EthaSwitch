@@ -1,0 +1,76 @@
+SELECT id, name, is_customer, status, customer_blocked
+	FROM cc.accounts
+	WHERE is_customer='yes' and status='yes' and customer_blocked='no';
+
+
+SELECT cc.gateway_groups.id as gg_id,cc.gateway_groups.account_id as acc_id, cc.gateway_groups.name as gg_name, cc.gateway_groups.is_incoming, cc.gateway_groups.is_outgoing, cc.gateway_groups.distribution_model, 
+       cc.gateway_groups.status, cc.accounts.name, cc.accounts.is_customer, cc.accounts.is_provider, cc.accounts.status, cc.accounts.customer_blocked    
+	FROM cc.gateway_groups
+	join cc.accounts
+	on cc.gateway_groups.account_id=cc.accounts.id
+	WHERE cc.accounts.is_customer='yes' and cc.accounts.status='yes' and cc.accounts.customer_blocked='no' and cc.gateway_groups.is_incoming='yes';
+
+
+SELECT cc.gateway_groups.id as gg_id,cc.gateway_groups.account_id as acc_id, cc.gateway_groups.name as gg_name, cc.gateway_groups.is_incoming, 
+       cc.gateway_groups.status, cc.accounts.name, cc.accounts.is_customer, cc.accounts.status, cc.accounts.customer_blocked    
+	FROM cc.gateway_groups
+	join cc.accounts
+	on cc.gateway_groups.account_id=cc.accounts.id
+	WHERE cc.accounts.is_customer='yes' and cc.accounts.status='yes' and cc.accounts.customer_blocked='no' and cc.gateway_groups.is_incoming='yes'
+	order by gg_id ASC;
+
+
+SELECT services.tech_prefix AS username,
+    gateways.ip_address AS domain,
+    gateways.gateway_group_id AS groupid,
+    ''::text AS description
+   FROM cc.gateways
+   JOIN cc.services 
+   ON gateways.gateway_group_id = services.gateway_group_id 
+
+
+SELECT services.tech_prefix AS username,
+    gateways.ip_address AS domain,
+    gateways.gateway_group_id AS groupid,
+    ''::text AS description
+   FROM cc.gateways
+   JOIN cc.services 
+   ON gateways.gateway_group_id = services.gateway_group_id 
+   ORDER BY username;
+
+
+
+--- dr_groups table
+INSERT INTO dr.dr_groups (username,domain,groupid,description)
+	SELECT services.tech_prefix AS username,
+    gateways.ip_address AS domain,
+    gateways.gateway_group_id AS groupid,
+    ''::text AS description
+   FROM cc.gateways
+   JOIN cc.services 
+   ON gateways.gateway_group_id = services.gateway_group_id;
+
+
+--- dr_gateways table
+INSERT INTO dr.dr_gateways (type,address,strip,pri_prefix,attrs,description)
+	SELECT 2 AS type,
+    gateways.ip_address AS address,
+    4 AS strip,
+    routes.tech_prefix AS pri_prefix,
+    ''::text AS attrs,
+    ''::text AS description
+   FROM cc.gateways
+     JOIN cc.routes 
+	 ON gateways.gateway_group_id = routes.gateway_group_id;
+
+
+--- dr_rules table
+
+
+    
+
+
+
+
+
+
