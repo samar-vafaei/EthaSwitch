@@ -4,6 +4,6 @@
 # setid(int) destination(sip uri) flags(int,opt) priority(int,opt) attributes(str,opt)
 
 # gateways
-1 sip:172.18.0.5:5060 8 0 duid=xy;maxload=20;prefix=7676;strip=3
-1 sip:172.18.0.6:5060 8 0 duid=xz;maxload=10;prefix=7676;strip=3
-1 sip:172.18.0.7:5060 8 0 duid=yz;maxload=50;prefix=7676;strip=3
+1 sip:172.18.0.5:5060 0 0 duid=xy;maxload=500;prefix=7676;strip=3
+1 sip:172.18.0.6:5060 0 0 duid=xz;maxload=500;prefix=7676;strip=3
+1 sip:172.18.0.7:5060 0 0 duid=yz;maxload=500;prefix=7676;strip=3
