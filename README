@@ -1,6 +1,6 @@
 Problem description:
 
-Web application updates the database tables, routing eules.
+Web application updates the database tables, routing rules.
 The cache of the core and core databse need to be updated, as well.
 Therefore, a service called service-A is needed to do the task.
 re_grp table and dispatcher.list file must be updated.
