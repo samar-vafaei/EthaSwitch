@@ -1,46 +1,42 @@
-// Client side C program to demonstrate Socket
-// programming
+// Client side Socket
+
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
+
 #define PORT 8080
+
 
 int main(int argc, char const* argv[])
 {
-	int status, valread, client_fd;
-	struct sockaddr_in serv_addr;
-	char* hello = "Hello from client";
+	int fd;
+	const struct sockaddr_in* serv_addr;
 	char buffer[1024] = { 0 };
-	if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+
+	if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		printf("\n Socket creation error \n");
 		return -1;
 	}
 
+	// Server side = postgres DB
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
-    serv_addr.address="172.18.0.8"; //psql ip address
 
-	// Convert IPv4 and IPv6 addresses from text to binary
-	// form
-	if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)
-		<= 0) {
-		printf(
-			"\nInvalid address/ Address not supported \n");
+	// Convert IPv4 and IPv6 addresses from text to binary form
+	if ( inet_pton(AF_INET, "172.18.0.8", &serv_addr.sin_addr) <= 0) {
+		printf("\nInvalid address/ Address not supported \n");
 		return -1;
 	}
 
-	if ((status
-		= connect(client_fd, (struct sockaddr*)&serv_addr,
-				sizeof(serv_addr)))
-		< 0) {
+	if ( connect(fd, serv_addr, sizeof(serv_addr)) < 0 ) {
 		printf("\nConnection Failed \n");
 		return -1;
 	}
-	send(client_fd, hello, strlen(hello), 0);
-	printf("Hello message sent\n");
-	while(read(client_fd, buffer, 1024 - 1)){
+
+	while( read(fd, buffer, 1024 - 1) > 0 ){
         	printf("%s\n", buffer);
 
             //update dispatcher.list file 
@@ -52,10 +48,10 @@ int main(int argc, char const* argv[])
 
             //update cache 
 
-    }
+       }
   
 	// closing the connected socket
-	close(client_fd);
+	close(fd);
 	return 0;
 }
 
