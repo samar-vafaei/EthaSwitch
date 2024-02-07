@@ -13,7 +13,7 @@
 int main(int argc, char const* argv[])
 {
 	int fd;
-	const struct sockaddr_in* serv_addr;
+	struct sockaddr_in serv_addr;
 	char buffer[1024] = { 0 };
 
 	if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
@@ -22,21 +22,18 @@ int main(int argc, char const* argv[])
 	}
 
 	// Server side = postgres DB
+	memset(&serv_addr, 0, sizeof(serv_addr));
+
 	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr("172.18.0.8");
 	serv_addr.sin_port = htons(PORT);
 
-	// Convert IPv4 and IPv6 addresses from text to binary form
-	if ( inet_pton(AF_INET, "172.18.0.8", &serv_addr.sin_addr) <= 0) {
-		printf("\nInvalid address/ Address not supported \n");
-		return -1;
-	}
-
-	if ( connect(fd, serv_addr, sizeof(serv_addr)) < 0 ) {
+	if ( connect(fd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0 ) {
 		printf("\nConnection Failed \n");
 		return -1;
 	}
 
-	while( read(fd, buffer, 1024 - 1) > 0 ){
+	while( read(fd, buffer, sizeof(buffer) - 1) > 0 ){
         	printf("%s\n", buffer);
 
             //update dispatcher.list file 
