@@ -1,7 +1,39 @@
-Problem description:
-
+************************* 
+** Problem description: *
+*************************
 Web application updates the database tables, routing rules.
-The cache of the core and core database need to be updated, as well.
-Therefore, a service called service-A is needed to do the task.
-re_grp table and dispatcher.list file must be updated.
+The cache, database table(re_grp) and dispatcher.list file 
+on the core side need to be updated, as well. Therefore, a 
+service called service-A is needed to do the task.
+
+** note: We run service-A in a Debian docker container.
+
+
+****************
+** service-A.c *
+****************
+* create a socket(client side)
+* connect the socket to the server
+* read from the socket whenever data is available
+
+
+**********************
+** Compile the code: *
+**********************
+gcc service-A.c -o service-A
+
+
+****************************
+** Run as a Linux systemd: *
+****************************
+
+
+
+
+
+
+
+
+
+
 
