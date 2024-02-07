@@ -1,0 +1,16 @@
+[Unit]
+Description=Service that keeps running the service-A from startup.
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/service-A
+WorkingDirectory=/home/
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=%n

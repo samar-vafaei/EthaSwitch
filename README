@@ -23,9 +23,22 @@ service called service-A is needed to do the task.
 gcc service-A.c -o service-A
 
 
-****************************
-** Run as a Linux systemd: *
-****************************
+**********************************************
+** Run service-A as a Linux systemd service: *
+**********************************************
+Write a service-A.service unit file and put it in the path:
+/etc/systemd/system/service-A.service
+
+systemctl daemon-reload
+systemctl enable service-A.service
+systemctl start service-A.service
+systemctl status service-A.service
+
+logs of the service --> journalctl -f -u service-A.service
+cat /var/log/journal/service-A.service.log
+
+
+
 
 
 

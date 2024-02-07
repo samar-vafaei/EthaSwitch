@@ -1,4 +1,4 @@
-// Client side Socket
+// Client Side Socket
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define PORT 8080
+#define PORT 5432
 
 
 int main(int argc, char const* argv[])
@@ -33,8 +33,11 @@ int main(int argc, char const* argv[])
 		return -1;
 	}
 
-	while( read(fd, buffer, sizeof(buffer) - 1) > 0 ){
-        	printf("%s\n", buffer);
+	//for(;;){} ---> infinite loop
+	while(1){
+		if( read(fd, buffer, sizeof(buffer) - 1) > 0 ){
+			printf("%s\n", buffer);
+		}
 
             //update dispatcher.list file 
 
@@ -45,7 +48,7 @@ int main(int argc, char const* argv[])
 
             //update cache 
 
-       }
+	}
   
 	// closing the connected socket
 	close(fd);
