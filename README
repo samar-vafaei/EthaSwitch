@@ -20,7 +20,10 @@ service called service-A is needed to do the task.
 **********************
 ** Compile the code: *
 **********************
-gcc service-A.c -o service-A
+apt-get install libpq-dev
+
+gcc -c -I/usr/include/postgresql/ service-A.c 
+gcc -o service-A service-A.o -L/usr/include/postgresql/libpq -lpq
 
 
 **********************************************

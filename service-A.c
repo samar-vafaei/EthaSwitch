@@ -1,75 +1,84 @@
-// Client-Side Socket
+//Asynchronous Notification Interface
+//Client-Side
 
-#include <arpa/inet.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
+#include <errno.h>
+#include <sys/select.h>
+#include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 
-#include <postgresql/libpq-fe.h>
-
-#define PORT 5432
+#include <libpq-fe.h>
 
 
-int main(int argc, char const* argv[])
+static void close_connection(PGconn *dbconn)
 {
-	int fd;
-	struct sockaddr_in serv_addr;
-	char buffer[1024] = { 0 };
+    PQfinish(dbconn);
+    exit(1);
+}
 
-
+int main(int argc, char const** argv)
+{	
 	PGconn *dbconn; 
 	dbconn=PQconnectdb("postgresql://kamailio:kamailiorw@172.18.0.8:5432/kamailio");
-
-	if (PQstatus(dbconn) == CONNECTION_BAD) {
-        	printf("Unable to connect to database\n");
-        }
+	if (PQstatus(dbconn) != CONNECTION_OK) {
+		fprintf(stderr, "%s", PQerrorMessage(dbconn));
+		close_connection(dbconn);
+	}
 
 	PGresult *query;
-	query = PQexec(dbconn, "select * from dr_rules");
+	query = PQexec(dbconn, "SELECT pg_catalog.set_config('search_path', '', false)");
+	if (PQresultStatus(query) != PGRES_TUPLES_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(dbconn));
+        PQclear(query);
+		close_connection(dbconn);        
+    }
+	PQclear(query);
 
-	printf ("%s\n", PQgetvalue(query, 0, 1));
+	query = PQexec(dbconn, "LISTEN TBL2");
+    if (PQresultStatus(query) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "LISTEN command failed: %s", PQerrorMessage(dbconn));
+        PQclear(query);
+		close_connection(dbconn);  
+    }
+    PQclear(query);
 
-	PQfinish(dbconn);
+	int nnotifies = 0;
+	int sock;
+	fd_set reading;	
+	PGnotify   *notify;
 
+	while(nnotifies < 4){	
 
-	if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
-		printf("\n Socket creation error \n");
-		return -1;
-	}
+		sock=PQsocket(dbconn);
+		if(sock<0) break;
+		
+		FD_ZERO(&reading);
+		FD_SET(sock, &reading);
 
-	// Server side = postgres DB
-	memset(&serv_addr, 0, sizeof(serv_addr));
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr("172.18.0.8");
-	serv_addr.sin_port = htons(PORT);
-
-	if ( connect(fd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0 ) {
-		printf("\nConnection Failed \n");
-		return -1;
-	}
-
-	//for(;;){} ---> infinite loop
-	while(1){
-		if( read(fd, buffer, sizeof(buffer) - 1) > 0 ){
-			printf("%s\n", buffer);
+		if(select(sock+1, &reading, NULL, NULL, NULL) < 0){
+			fprintf(stderr, "select() failed: %s\n", strerror(errno));
+			close_connection(dbconn);
 		}
 
-            //update dispatcher.list file 
-
-
-            //update re_grp table
-
-
-
-            //update cache 
-
+		PQconsumeInput(dbconn);
+		while((notify = PQnotifies(dbconn)) != NULL){
+			//notify->extra notification payload string
+			//notify->relname channel name
+			fprintf(stderr, "ASYNC NOTIFY of '%s' received from backend PID %d\n", notify->relname, notify->be_pid);
+			PQfreemem(notify);
+			nnotifies++;
+			PQconsumeInput(dbconn);
+		}
 	}
-  
-	// closing the connected socket
-	close(fd);
+
+	fprintf(stderr, "Done.\n");
+
+	PQfinish(dbconn);
+	
 	return 0;
 }
 
