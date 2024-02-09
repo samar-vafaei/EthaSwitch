@@ -8,6 +8,8 @@ service called service-A is needed to do the task.
 
 ** note: We run service-A in a Debian docker container.
 
+docker run -itd --network=br0 --ip=172.18.0.9 --name=debian -v C:\Users\rd.vafaei\EthaSwitch:/home e3cbd207d8e5
+
 
 ****************
 ** service-A.c *

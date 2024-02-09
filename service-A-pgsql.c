@@ -45,11 +45,13 @@ int main(int argc, char const** argv)
 		close_connection(dbconn);  
     }
     PQclear(query);
-	
+
+	int nnotifies = 0;
 	int sock;
 	fd_set reading;	
 	PGnotify   *notify;
-	while(1){
+
+	while(nnotifies < 4){	
 
 		sock=PQsocket(dbconn);
 		if(sock<0) break;
@@ -67,7 +69,8 @@ int main(int argc, char const** argv)
 			//notify->extra notification payload string
 			//notify->relname channel name
 			fprintf(stderr, "ASYNC NOTIFY of '%s' received from backend PID %d\n", notify->relname, notify->be_pid);
-			PQfreemem(notify);			
+			PQfreemem(notify);
+			nnotifies++;
 			PQconsumeInput(dbconn);
 		}
 	}
