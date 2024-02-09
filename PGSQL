@@ -30,6 +30,6 @@ $BODY$;
 
 CREATE TRIGGER "OnDataChange"
   AFTER INSERT OR DELETE OR UPDATE 
-  ON public.orders
+  ON public.re_grp
   FOR EACH ROW
   EXECUTE PROCEDURE public."NotifyOnDataChange"();
