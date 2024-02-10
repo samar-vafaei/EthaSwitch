@@ -1,35 +1,39 @@
-CREATE FUNCTION public."NotifyOnDataChange"()
-  RETURNS trigger
-  LANGUAGE 'plpgsql'
+CREATE FUNCTION NotifyOnDataChange()
+  RETURNS trigger  
 AS $BODY$ 
 DECLARE 
   data JSON;
   notification JSON;
 BEGIN
-  -- if we delete, then pass the old data
-  -- if we insert or update, pass the new data
+
   IF (TG_OP = 'DELETE') THEN
     data = row_to_json(OLD);
   ELSE
     data = row_to_json(NEW);
   END IF;
-
-  -- create json payload
-  -- note that here can be done projection 
+ 
   notification = json_build_object(
             'table',TG_TABLE_NAME,
-            'action', TG_OP, -- can have value of INSERT, UPDATE, DELETE
+            'action', TG_OP, 
             'data', data);  
             
     -- note that channel name MUST be lowercase, otherwise pg_notify() won't work
-    PERFORM pg_notify('TBL2', notification::TEXT);
+    PERFORM pg_notify('tbl2', notification::TEXT);
   RETURN NEW;
-END
-$BODY$;
+END;
+$BODY$ LANGUAGE plpgsql;
 
+CREATE TRIGGER OnDataChange_INS
+  AFTER INSERT ON re_grp
+  REFERENCING NEW TABLE AS new_table
+  FOR EACH STATEMENT EXECUTE FUNCTION NotifyOnDataChange();
 
-CREATE TRIGGER "OnDataChange"
-  AFTER INSERT OR DELETE OR UPDATE 
-  ON public.re_grp
-  FOR EACH ROW
-  EXECUTE PROCEDURE public."NotifyOnDataChange"();
+CREATE TRIGGER OnDataChange_UPD
+  AFTER UPDATE ON re_grp
+  REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table
+  FOR EACH STATEMENT EXECUTE FUNCTION NotifyOnDataChange();
+
+CREATE TRIGGER OnDataChange_DEL
+  AFTER DELETE ON re_grp
+  REFERENCING OLD TABLE AS old_table
+  FOR EACH STATEMENT EXECUTE FUNCTION NotifyOnDataChange();

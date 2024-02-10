@@ -37,7 +37,7 @@ int main(int argc, char const** argv)
     }
 	PQclear(query);
 
-	query = PQexec(dbconn, "LISTEN TBL2");
+	query = PQexec(dbconn, "LISTEN tbl2");
     if (PQresultStatus(query) != PGRES_COMMAND_OK)
     {
         fprintf(stderr, "LISTEN command failed: %s", PQerrorMessage(dbconn));
@@ -66,7 +66,7 @@ int main(int argc, char const** argv)
 		while((notify = PQnotifies(dbconn)) != NULL){
 			//notify->extra notification payload string
 			//notify->relname channel name
-			fprintf(stderr, "ASYNC NOTIFY of '%s' received from backend PID %d\n", notify->relname, notify->be_pid);
+			fprintf(stderr, "ASYNC NOTIFY of '%s' received from backend PID %d with payload of %s\n", notify->relname, notify->be_pid, notify->extra);
 			PQfreemem(notify);			
 			PQconsumeInput(dbconn);
 		}
