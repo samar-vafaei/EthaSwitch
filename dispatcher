@@ -1,5 +1,14 @@
 setid(int) destination(str) flags(int) priority(int) attributes(str)
-1|sip:72.52.124.18:5060|8|0|duid=xy;maxload=1000;prefix=7676;strip=4
-1|sip:72.52.124.18:5060|8|0|duid=xz;maxload=100;prefix=761;strip=4
-1|sip:72.52.124.18:5060|8|0|duid=yz;maxload=100;prefix=760;strip=4
-1|sip:71.72.73.74:7000|8|0|duid=yx;maxload=21;prefix=12125;strip=4
+1|sip:72.52.124.18:5060|8|0|duid=405;maxload=1000;prefix=7676;strip=4
+1|sip:72.52.124.18:5060|8|0|duid=417;maxload=100;prefix=761;strip=4
+1|sip:72.52.124.18:5060|8|0|duid=418;maxload=100;prefix=760;strip=4
+1|sip:71.72.73.74:7000|8|0|duid=442;maxload=21;prefix=12125;strip=4
+2|sip:72.52.124.18:5060|8|0|duid=405;maxload=1000;prefix=7676;strip=7
+3|sip:72.52.124.18:5060|8|0|duid=417;maxload=100;prefix=761;strip=7
+4|sip:72.52.124.18:5060|8|0|duid=405;maxload=1000;prefix=7676;strip=7
+4|sip:72.52.124.18:5060|8|0|duid=417;maxload=100;prefix=761;strip=7
+4|sip:72.52.124.18:5060|8|0|duid=418;maxload=100;prefix=760;strip=7
+4|sip:71.72.73.74:7000|8|0|duid=442;maxload=21;prefix=12125;strip=7
+5|sip:72.52.124.18:5060|8|0|duid=417;maxload=100;prefix=761;strip=3
+6|sip:72.52.124.18:5060|8|0|duid=418;maxload=100;prefix=760;strip=3
+7|sip:72.52.124.18:5060|8|0|duid=405;maxload=1000;prefix=7676;strip=4
