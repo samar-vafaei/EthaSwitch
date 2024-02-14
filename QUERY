@@ -86,3 +86,17 @@ From
 	 ON gateways.gateway_group_id = routes.gateway_group_id
 	 order by duid) as tbl_temp_1
 	 on tbl_temp_1.duid=NULLIF(tbl_temp_2.gwset, '')::int
+
+
+
+*******************************************************************************************
+
+SELECT gateways.id AS duid,   
+	lower(gateways.protocol) || ':'::text || gateways.ip_address || ':'::text || gateways.port AS destination,		
+	8 AS flags,
+	0 AS priority,
+	'duid='::text || gateways.id || ';'::text || 'maxload='::text || gateways.capacity || ';'::text || 'prefix='::text || routes.tech_prefix AS attributes 
+   FROM cc.gateways
+     JOIN cc.routes 
+	 ON gateways.gateway_group_id = routes.gateway_group_id
+	 order by duid;
