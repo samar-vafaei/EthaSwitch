@@ -1,14 +1,30 @@
-SELECT gateways.id AS duid,   
-	lower(gateways.protocol) || ':'::text || gateways.ip_address || ':'::text || gateways.port AS destination,		
-	8 AS flags,
-	0 AS priority,
-	'duid='::text || gateways.id || ';'::text || 'maxload='::text || gateways.capacity || ';'::text || 'prefix='::text || routes.tech_prefix || ';'::text || 'strip='::text || 4  AS attributes 
-   FROM cc.gateways
-     JOIN cc.routes 
-	 ON gateways.gateway_group_id = routes.gateway_group_id;
+--- re_grp file
 
-
-SELECT groupid, length(tech_prefix), prefix AS reg_exp , string_agg(gwid::text, ',') AS gwlist, ''::text AS destination, 8 AS flags, 0 AS priority, ''::text AS attributes 
+select distinct Samar.reg_exp, vafaei.setid
+From
+(SELECT tech_prefix , string_agg(gwid::text, ',') AS gwlist, sum(gwid) AS gwid_sum, prefix AS reg_exp, length(tech_prefix) AS strip	
+        FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS tech_prefix, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, 
+			  cc.gateways.id AS gwid
+                FROM cc.routes
+                JOIN cc.gateways
+                ON cc.routes.gateway_group_id = cc.gateways.gateway_group_id
+                JOIN cc.route_groups
+                ON cc.routes.id = cc.route_groups.route_id
+                JOIN cc.dial_plans
+                ON cc.dial_plans.id = cc.route_groups.dial_plan_id
+                JOIN cc.dial_plan_groups
+                ON cc.dial_plan_groups.dial_plan_id = cc.dial_plans.id
+                JOIN cc.services
+                ON cc.services.id = cc.dial_plan_groups.service_id
+                JOIN cc.master_prefixes
+                ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
+                WHERE cc.dial_plans.blocked = 'no' 
+                ORDER BY groupid,prefix,priority) AS dr_rules
+    GROUP BY groupid,prefix,tech_prefix
+	order by tech_prefix) as Samar
+	join (select row_number() over() as setid, strip, gwlist, gwid_sum 
+From
+(SELECT prefix AS reg_exp ,string_agg(gwid::text, ',') AS gwlist, sum(gwid) AS gwid_sum, groupid, tech_prefix, length(tech_prefix) AS strip, 8 AS flags, 0 AS priority, ''::text AS attributes        
         FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS tech_prefix, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, cc.gateways.id AS gwid	
                 FROM cc.routes
                 JOIN cc.gateways
@@ -25,21 +41,22 @@ SELECT groupid, length(tech_prefix), prefix AS reg_exp , string_agg(gwid::text, 
                 ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
                 WHERE cc.dial_plans.blocked = 'no' 
                 ORDER BY groupid,tech_prefix,prefix,priority) AS dr_rules
-    GROUP BY groupid,tech_prefix,prefix
+    GROUP BY groupid,tech_prefix,prefix) AS tt
+	GROUP BY gwid_sum,strip,gwlist
+	order by strip desc) as vafaei
+	on Samar.gwid_sum=vafaei.gwid_sum and Samar.strip=vafaei.strip
+	order by Samar.reg_exp
+	
 
-**********************************************************************************************************
+--- dispatcher file
 
-    row_number() over (
-		partition by groupid
-		order by groupid ) AS setid
-
-
-
-    SELECT groupid, stp , string_agg(gwid::text, ',') AS gwlist, prefix AS reg_exp,
-	row_number() over (
-		partition by groupid,stp
-		order by groupid,stp ) AS setid
-        FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS stp, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, 
+select setid, destination, flags, priority , attributes || ';'::text || 'strip='::text || strip AS attributes  from (
+select setid , gwset,strip
+from(
+select row_number() over() as setid, strip, gwlist
+From
+(SELECT prefix AS reg_exp ,string_agg(gwid::text, ',') AS gwlist, sum(gwid) AS gwid_sum, groupid, tech_prefix, length(tech_prefix) AS strip
+        FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS tech_prefix, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix,
 			  cc.gateways.id AS gwid
                 FROM cc.routes
                 JOIN cc.gateways
@@ -55,69 +72,17 @@ SELECT groupid, length(tech_prefix), prefix AS reg_exp , string_agg(gwid::text, 
                 JOIN cc.master_prefixes
                 ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
                 WHERE cc.dial_plans.blocked = 'no' 
-                ORDER BY groupid,prefix,priority) AS dr_rules
-    GROUP BY groupid,prefix,stp
-
-
-    select reg_exp, groupid || stp || gwlist AS ss,
-row_number() over (
-		partition by groupid,stp
-		order by groupid,stp ) AS setid
-FROM
-(SELECT groupid, stp , string_agg(gwid::text, '') AS gwlist, prefix AS reg_exp	
-        FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS stp, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, 
-			  cc.gateways.id AS gwid
-                FROM cc.routes
-                JOIN cc.gateways
-                ON cc.routes.gateway_group_id = cc.gateways.gateway_group_id
-                JOIN cc.route_groups
-                ON cc.routes.id = cc.route_groups.route_id
-                JOIN cc.dial_plans
-                ON cc.dial_plans.id = cc.route_groups.dial_plan_id
-                JOIN cc.dial_plan_groups
-                ON cc.dial_plan_groups.dial_plan_id = cc.dial_plans.id
-                JOIN cc.services
-                ON cc.services.id = cc.dial_plan_groups.service_id
-                JOIN cc.master_prefixes
-                ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
-                WHERE cc.dial_plans.blocked = 'no' 
-                ORDER BY groupid,prefix,priority) AS dr_rules
-    GROUP BY groupid,prefix,stp) AS tt	
-	group by groupid,stp,reg_exp,ss
-
-
-
-
-    select reg_exp,ss,
-row_number() over (
-		partition by ss
-		order by reg_exp ) AS setid
-		from
-(select reg_exp, groupid || stp || gwlist AS ss
-FROM
-(SELECT groupid, stp , string_agg(gwid::text, '') AS gwlist, prefix AS reg_exp	
-        FROM (SELECT cc.services.gateway_group_id AS groupid, cc.services.tech_prefix AS stp, CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, 
-			  cc.gateways.id AS gwid
-                FROM cc.routes
-                JOIN cc.gateways
-                ON cc.routes.gateway_group_id = cc.gateways.gateway_group_id
-                JOIN cc.route_groups
-                ON cc.routes.id = cc.route_groups.route_id
-                JOIN cc.dial_plans
-                ON cc.dial_plans.id = cc.route_groups.dial_plan_id
-                JOIN cc.dial_plan_groups
-                ON cc.dial_plan_groups.dial_plan_id = cc.dial_plans.id
-                JOIN cc.services
-                ON cc.services.id = cc.dial_plan_groups.service_id
-                JOIN cc.master_prefixes
-                ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
-                WHERE cc.dial_plans.blocked = 'no' 
-                ORDER BY groupid,prefix,priority) AS dr_rules
-    GROUP BY groupid,prefix,stp) AS tt	
-	group by reg_exp,ss) AS TT
-	
-	
-	
-	
-	
-	
+                ORDER BY groupid,tech_prefix,prefix,priority) AS dr_rules
+    GROUP BY groupid,tech_prefix,prefix) AS tt
+	GROUP BY gwid_sum,strip,gwlist
+	order by strip desc) AS tbl , unnest(string_to_array(gwlist, ',')) gwset)as tbl_temp_2
+	join (SELECT gateways.id AS duid,   
+	lower(gateways.protocol) || ':'::text || gateways.ip_address || ':'::text || gateways.port AS destination,		
+	8 AS flags,
+	0 AS priority,
+	'duid='::text || gateways.id || ';'::text || 'maxload='::text || gateways.capacity || ';'::text || 'prefix='::text || routes.tech_prefix  AS attributes 
+   FROM cc.gateways
+     JOIN cc.routes 
+	 ON gateways.gateway_group_id = routes.gateway_group_id
+	 order by duid) as tbl_temp_1
+	 on tbl_temp_1.duid=NULLIF(tbl_temp_2.gwset, '')::int
