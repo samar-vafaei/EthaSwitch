@@ -114,7 +114,7 @@ int main(int argc, char const** argv)
 
 		fp = fopen("/etc/kamailio/dispatcher_temp", "w");
 
-		for (int i = 0; i < cols; i++) {
+		for (i = 0; i < cols; i++) {
 			fprintf(fp,"%s\t", PQfname(query, i));
 		}
 		fprintf(fp,"\n");
