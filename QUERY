@@ -33,7 +33,7 @@ WITH tbl_temp_1 AS (
 
 
 --- re_grp file
-CREATE VIEW re_group AS
+CREATE VIEW cc.re_group AS
         SELECT DISTINCT SA.reg_exp, VA.setid FROM
                 (SELECT tech_prefix, STRING_AGG(gwid::TEXT, ',') AS gwlist, SUM(gwid) AS gwid_sum, prefix AS reg_exp, 
                         LENGTH(tech_prefix) AS strip	
@@ -53,7 +53,7 @@ CREATE VIEW re_group AS
 	
 
 --- dispatcher file
-CREATE VIEW dispatcher AS
+CREATE VIEW cc.dispatcher AS
         SELECT setid, destination, flags, priority , attributes || ';'::TEXT || 'strip='::TEXT || strip AS attributes  
         FROM (SELECT setid, gwset, strip 
                 FROM (SELECT row_number() over() AS setid, strip, gwlist
