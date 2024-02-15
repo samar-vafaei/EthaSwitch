@@ -37,3 +37,6 @@ CREATE TRIGGER OnDataChange_DEL
   AFTER DELETE ON re_grp
   REFERENCING OLD TABLE AS old_table
   FOR EACH STATEMENT EXECUTE FUNCTION NotifyOnDataChange();
+
+
+-- Create triggers on routes, gateways, route_groups, dial_plans, dial_plan_groups, services, master_prefixes

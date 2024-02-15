@@ -40,15 +40,16 @@ int main(int argc, char const** argv)
 	query = PQexec(dbconn, "LISTEN tbl2");
     if (PQresultStatus(query) != PGRES_COMMAND_OK)
     {
-        fprintf(stderr, "LISTEN command failed: %s", PQerrorMessage(dbconn));
+        fprintf(stderr, "LISTEN command failed: %s\n", PQerrorMessage(dbconn));
         PQclear(query);
 		close_connection(dbconn);  
     }
     PQclear(query);
 	
-	int sock;
+	int sock, rows, cols, i, j;
 	fd_set reading;	
 	PGnotify   *notify;
+	FILE *fp;
 	while(1){
 
 		sock=PQsocket(dbconn);
@@ -70,6 +71,67 @@ int main(int argc, char const** argv)
 			PQfreemem(notify);			
 			PQconsumeInput(dbconn);
 		}
+
+		query = PQexec(dbconn, "SELECT * FROM re_group");
+		if (PQresultStatus(query) != PGRES_COMMAND_OK)
+		{
+			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
+			PQclear(query);
+			close_connection(dbconn);  
+		}
+
+		rows = PQntuples(query);
+		cols = PQnfields(query);
+
+		fp = fopen("/etc/kamailio/re_grp_temp", "w");
+
+		for (i = 0; i < cols; i++) {
+			fprintf(fp,"%s\t", PQfname(query, i));
+		}
+		fprintf(fp,"\n");
+
+		for (i = 0; i < rows; i++) {
+			for (j = 0; j < cols; j++) {            
+				fprintf(fp,"%s\t", PQgetvalue(query, i, j));
+			}
+			fprintf(fp,"\n");
+		}
+
+		fclose(fp);		
+		
+		PQclear(query);
+
+		query = PQexec(dbconn, "SELECT * FROM dispatcher");
+		if (PQresultStatus(query) != PGRES_COMMAND_OK)
+		{
+			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
+			PQclear(query);
+			close_connection(dbconn);  
+		}
+
+		rows = PQntuples(query);
+		cols = PQnfields(query);
+
+		fp = fopen("/etc/kamailio/dispatcher_temp", "w");
+
+		for (int i = 0; i < cols; i++) {
+			fprintf(fp,"%s\t", PQfname(query, i));
+		}
+		fprintf(fp,"\n");
+
+		for (i = 0; i < rows; i++) {
+			for (j = 0; j < cols; j++) {            
+				fprintf(fp,"%s\t", PQgetvalue(query, i, j));
+			}
+			fprintf(fp,"\n");
+		}
+
+		fclose(fp);
+
+		PQclear(query);
+
+		rename("/etc/kamailio/dispatcher_temp", "/etc/kamailio/dispatcher");
+		rename("/etc/kamailio/re_grp_temp", "/etc/kamailio/re_grp");
 	}
 
 	fprintf(stderr, "Done.\n");
