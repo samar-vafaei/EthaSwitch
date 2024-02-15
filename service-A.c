@@ -92,7 +92,7 @@ int main(int argc, char const** argv)
 
 		for (i = 0; i < rows; i++) {
 			for (j = 0; j < cols; j++) {            
-				fprintf(fp,"%s\t", PQgetvalue(query, i, j));
+				fprintf(fp,"%s|", PQgetvalue(query, i, j));
 			}
 			fprintf(fp,"\n");
 		}
@@ -121,7 +121,7 @@ int main(int argc, char const** argv)
 
 		for (i = 0; i < rows; i++) {
 			for (j = 0; j < cols; j++) {            
-				fprintf(fp,"%s\t", PQgetvalue(query, i, j));
+				fprintf(fp,"%s|", PQgetvalue(query, i, j));
 			}
 			fprintf(fp,"\n");
 		}
