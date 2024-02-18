@@ -1,4 +1,4 @@
-reg_exp(str) group_id(int)
+reg_exp(string) group_id(int)
 76769890|1
 76769891|1
 767698990|1

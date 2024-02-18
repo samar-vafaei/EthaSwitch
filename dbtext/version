@@ -1,0 +1,4 @@
+id(int,auto) table_name(string) table_version(int) 
+0|dispatcher|4
+0|grp|2
+0|re_grp|1
