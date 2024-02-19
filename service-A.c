@@ -21,9 +21,9 @@ static void close_connection(PGconn *dbconn)
 int main(int argc, char const** argv)
 {	
 	PGconn *dbconn; 
-	dbconn=PQconnectdb("postgresql://kamailio:kamailiorw@172.18.0.8:5432/kamailio");
+	dbconn=PQconnectdb("postgresql://kamailio:kamailiorw@172.18.0.8:5432/kamailio");							       	
 	if (PQstatus(dbconn) != CONNECTION_OK) {
-		fprintf(stderr, "%s", PQerrorMessage(dbconn));
+		fprintf(stderr, "%s", PQerrorMessage(dbconn));	
 		close_connection(dbconn);
 	}
 
@@ -72,8 +72,8 @@ int main(int argc, char const** argv)
 			PQconsumeInput(dbconn);
 		}
 
-		query = PQexec(dbconn, "SELECT * FROM re_group");
-		if (PQresultStatus(query) != PGRES_COMMAND_OK)
+		query = PQexec(dbconn, "SELECT * FROM public.re_grp");			
+		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
 			PQclear(query);
@@ -101,8 +101,8 @@ int main(int argc, char const** argv)
 		
 		PQclear(query);
 
-		query = PQexec(dbconn, "SELECT * FROM dispatcher");
-		if (PQresultStatus(query) != PGRES_COMMAND_OK)
+		query = PQexec(dbconn, "SELECT * FROM public.dispatcher");
+		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
 			PQclear(query);
