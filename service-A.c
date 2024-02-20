@@ -83,7 +83,7 @@ int main(int argc, char const** argv)
 		rows = PQntuples(query);
 		cols = PQnfields(query);
 
-		fp = fopen("/etc/kamailio/re_grp_temp", "w");
+		fp = fopen("/etc/kamailio/dbtext/re_grp_temp", "w");
 
 		for (i = 0; i < cols; i++) {
 			fprintf(fp,"%s\t", PQfname(query, i));
@@ -112,7 +112,7 @@ int main(int argc, char const** argv)
 		rows = PQntuples(query);
 		cols = PQnfields(query);
 
-		fp = fopen("/etc/kamailio/dispatcher_temp", "w");
+		fp = fopen("/etc/kamailio/dbtext/dispatcher_temp", "w");
 
 		for (i = 0; i < cols; i++) {
 			fprintf(fp,"%s\t", PQfname(query, i));
@@ -130,8 +130,8 @@ int main(int argc, char const** argv)
 
 		PQclear(query);
 
-		rename("/etc/kamailio/dispatcher_temp", "/etc/kamailio/dispatcher");
-		rename("/etc/kamailio/re_grp_temp", "/etc/kamailio/re_grp");
+		rename("/etc/kamailio/dbtext/dispatcher_temp", "/etc/kamailio/dbtext/dispatcher");
+		rename("/etc/kamailio/dbtext/re_grp_temp", "/etc/kamailio/dbtext/re_grp");
 	}
 
 	fprintf(stderr, "Done.\n");

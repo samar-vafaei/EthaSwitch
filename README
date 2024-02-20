@@ -2,9 +2,9 @@
 ** Problem description: *
 *************************
 Web application updates the database tables, routing rules.
-The cache, database table(re_grp) and dispatcher.list file 
-on the core side need to be updated, as well. Therefore, a 
-service called service-A is needed to do the task.
+The cache, re_grp and dispatcher files on the core side need 
+to be updated, as well. Therefore, a service called service-A 
+is needed to do the task.
 
 ** note: We run service-A in a Debian docker container.
 
@@ -14,9 +14,10 @@ docker run -itd --network=br0 --ip=172.18.0.9 --name=debian -v C:\Users\rd.vafae
 ****************
 ** service-A.c *
 ****************
-* create a socket(client side)
-* connect the socket to the server
-* read from the socket whenever data is available
+* create a socket(client side) listening on the postgresDB notification
+* connect the socket to the postgresDB server
+* read from the socket whenever data(notification) is available
+* run 2 queries one after the other to update re_grp and dispatcher files
 
 
 **********************
@@ -41,6 +42,49 @@ systemctl status service-A.service
 
 logs of the service --> journalctl -f -u service-A.service
 cat /var/log/journal/service-A.service.log
+
+
+**********************
+** Solution details: *
+**********************
+
+Modules: dbtext, group and dispatcher
+
+Cache update: done by dbtext module. Whenever a new traffic comes in, the dbtext module checks re_grp and dispatcher files.
+              If they are modified, then cache them into the memory.
+
+How does everything work together? When a traffic comes in, the username part of its RURI compared with the data in reg_exp column 
+of re_grp file (using regex pattern) and finds the matched record and returns the corresponding group_id. The given group_id used as
+setid for finding the dispatcher set (list of gateways) for routing the traffic.
+
+Triggers created on those tables taking part in dr_rule table (the rule is a relation which connects customers to the providers).
+customer ---> incoming SIP trunk
+provider ---> outgoing SIP trunk
+tech_prefix ---> DID number
+Triggers invoked for each statement (INSERT/UPDATE/DELETE) and sends notification to service-A
+
+service-A and kamailio(core) are two processes communicating with each other through sharing files - IPC (re_grp, dispatcher) /etc/kamailio/.
+1. /etc/kamailio/ on host
+2. /etc/kamailio/ on service-A container
+3. /etc/kamailio/ on kamailio(core) container
+
+database data are changed ---> notification by those triggers set on the tables sent to service-A
+service-A is always listening on the socket for the notification sent by postgres database.
+When service-A recieved notification ---> runs a query and select data from the re_group view ---> write the result on /etc/kamailio/dbtext/re_grp_temp temporary file
+runs the second query and select data from the dispatcher view ---> write the result on /etc/kamailio/dbtext/dispatcher_temp temporary file
+At the end, those two temporary files rename to /etc/kamailio/dbtext/re_grp and /etc/kamailio/dbtext/dispatcher
+To avoid race conditioning between service-A and kamailio, service-A first writes on temporary files and then rename them (service-A writes on the 
+same file that kamailio is reading from. If this happens at the same time ---> race condition = wrong results/conflicts).
+
+
+
+
+
+
+
+
+
+
 
 
 
