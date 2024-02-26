@@ -1,0 +1,54 @@
+--- dispatcher file
+CREATE VIEW cc.dispatcher AS
+WITH dr_rules AS (
+    SELECT distinct cc.services.gateway_group_id AS groupid, cc.route_groups.dial_plan_id,  
+				--CONCAT(cc.services.tech_prefix,cc.master_prefixes.prefix) AS prefix, 				
+				lower(cc.gateways.protocol) || ':'::TEXT || cc.gateways.ip_address || ':'::TEXT || cc.gateways.port AS destination,
+				8 AS flags, cc.route_groups.priority,
+				'duid='::TEXT || cc.gateways.id || ';'::TEXT || 'maxload='::TEXT || cc.gateways.capacity || ';'::TEXT || 'prefix='::TEXT || cc.routes.tech_prefix
+				|| ';'::TEXT || 'strip='::TEXT || LENGTH(cc.services.tech_prefix) || ';'::TEXT || 'rweight='::TEXT || cc.route_groups.weight AS attrs 
+				--cc.gateways.id AS duid,
+				--cc.gateways.capacity AS maxload,
+				--cc.routes.tech_prefix AS prefix,
+				--LENGTH(cc.services.tech_prefix) AS strip,
+			    --cc.route_groups.weight
+    FROM cc.routes
+    JOIN cc.gateways
+    ON cc.routes.gateway_group_id = cc.gateways.gateway_group_id
+    JOIN cc.route_groups
+    ON cc.routes.id = cc.route_groups.route_id
+    JOIN cc.dial_plans
+    ON cc.dial_plans.id = cc.route_groups.dial_plan_id
+    JOIN cc.dial_plan_groups
+    ON cc.dial_plan_groups.dial_plan_id = cc.dial_plans.id
+    JOIN cc.services
+    ON cc.services.id = cc.dial_plan_groups.service_id
+    JOIN cc.master_prefixes
+    ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
+    WHERE cc.dial_plans.blocked = 'no' 
+    --GROUP BY groupid,gwid,cc.route_groups.dial_plan_id
+    ORDER BY groupid--,prefix,priority
+), tbl_temp_1 AS (
+    SELECT row_number() over() AS setid, cc.services.gateway_group_id AS groupid, cc.route_groups.dial_plan_id				
+    FROM cc.routes
+    JOIN cc.gateways
+    ON cc.routes.gateway_group_id = cc.gateways.gateway_group_id
+    JOIN cc.route_groups
+    ON cc.routes.id = cc.route_groups.route_id
+    JOIN cc.dial_plans
+    ON cc.dial_plans.id = cc.route_groups.dial_plan_id
+    JOIN cc.dial_plan_groups
+    ON cc.dial_plan_groups.dial_plan_id = cc.dial_plans.id
+    JOIN cc.services
+    ON cc.services.id = cc.dial_plan_groups.service_id
+    JOIN cc.master_prefixes
+    ON cc.master_prefixes.id = cc.dial_plan_groups.master_prefix_id
+    WHERE cc.dial_plans.blocked = 'no' 
+    GROUP BY groupid, cc.route_groups.dial_plan_id
+    ORDER BY setid
+)
+SELECT DISTINCT tbl_temp_1.setid, dr_rules.destination, dr_rules.flags, dr_rules.priority, dr_rules.attrs
+FROM dr_rules
+JOIN tbl_temp_1
+ON tbl_temp_1.groupid = dr_rules.groupid AND tbl_temp_1.dial_plan_id = dr_rules.dial_plan_id
+ORDER BY setid
