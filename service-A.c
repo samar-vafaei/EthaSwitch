@@ -132,6 +132,12 @@ int main(int argc, char const** argv)
 
 		rename("/etc/kamailio/dbtext/dispatcher_temp", "/etc/kamailio/dbtext/dispatcher");
 		rename("/etc/kamailio/dbtext/re_grp_temp", "/etc/kamailio/dbtext/re_grp");
+
+		//no need to rename files - write on it directly - core just read data from cache 		
+		//run linux command from c code
+		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'
+		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from re_grp'
+		//system("kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'")
 	}
 
 	fprintf(stderr, "Done.\n");
