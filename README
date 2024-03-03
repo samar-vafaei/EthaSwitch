@@ -77,6 +77,11 @@ To avoid race conditioning between service-A and kamailio, service-A first write
 same file that kamailio is reading from. If this happens at the same time ---> race condition = wrong results/conflicts).
 
 
+Cache update:  use clustering (2nd option)
+            
+
+
+
 
 
 
