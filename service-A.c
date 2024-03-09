@@ -1,5 +1,6 @@
 //Asynchronous Notification Interface
 //Client-Side
+//Just update the database - dbtext /etc/kamailio/dbtext
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,8 +138,8 @@ int main(int argc, char const** argv)
 		//run linux command from c code
 		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'
 		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from re_grp'
-		system("kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'");
-		system("kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from re_grp'");
+		//system("kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'");
+		//system("kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from re_grp'");
 	}
 
 	fprintf(stderr, "Done.\n");
