@@ -1,4 +1,1 @@
-setid(int) destination(string) flags(int) priority(int) attrs(string)
-1|sip:172.18.0.5:5060|8|1|duid=5;maxload=100;prefix=7676;strip=4;rweight=0;
-1|sip:172.18.0.6:5060|8|2|duid=6;maxload=0;prefix=761;strip=4;rweight=1;
-1|sip:172.18.0.7:5060|8|3|duid=7;maxload=0;prefix=760;strip=4;rweight=2;
+id(int,auto) setid(int) destination(string) flags(int) priority(int) attrs(string) description(string) 
