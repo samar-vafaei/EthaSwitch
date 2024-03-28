@@ -13,6 +13,15 @@
 
 #include <libpq-fe.h>
 
+#include <arpa/inet.h> // inet_addr()
+#include <netdb.h>
+#include <strings.h> // bzero()
+#include <sys/socket.h>
+#include <unistd.h> // read(), write(), close()
+#define MAX 80
+#define PORT 8228
+#define SA struct sockaddr
+
 
 static void close_connection(PGconn *dbconn)
 {
@@ -52,6 +61,36 @@ int main(int argc, char const** argv)
 	fd_set reading;	
 	PGnotify   *notify;
 	FILE *fp;
+
+	int sockfd, connfd;
+	struct sockaddr_in servaddr;
+
+	// socket create and verification
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd == -1) {
+          printf("socket creation failed...\n");
+          exit(0);
+        }
+        else        
+	  printf("Socket successfully created..\n");
+
+        bzero(&servaddr, sizeof(servaddr));
+
+	// assign IP, PORT
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_addr.s_addr = inet_addr("172.18.0.2");
+        servaddr.sin_port = htons(PORT);
+
+	// connect the client socket to server socket
+        if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr))!= 0) {
+          printf("connection with the server failed...\n");
+          exit(0);
+        }
+        else
+          printf("connected to the server..\n");
+
+	char* msg = "databse is updated.";
+
 	while(1){
 
 		sock=PQsocket(dbconn);
@@ -142,13 +181,18 @@ int main(int argc, char const** argv)
 		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from dispatcher'
 		//call kamcmd -s udp:172.18.0.2:3000 db_text.query 'select * from re_grp'
 		//mechanism used to update cache
-		system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_re_grp");
-		system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_dispatcher");
+		//system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_re_grp");
+		//system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_dispatcher");
+
+		write(sockfd, msg, strlen(msg));
 	}
 
 	fprintf(stderr, "Done.\n");
 
 	PQfinish(dbconn);
+
+	// close the socket
+        close(sockfd);
 	
 	return 0;
 }
