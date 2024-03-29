@@ -57,12 +57,10 @@ int main(int argc, char const** argv)
     }
     PQclear(query);
 	
-	int sock, rows, cols, i, j;
+	int sock, rows, cols, i, j, sockfd;
 	fd_set reading;	
 	PGnotify   *notify;
 	FILE *fp;
-
-	int sockfd, connfd;
 	struct sockaddr_in servaddr;
 
 	// socket create and verification
@@ -89,7 +87,7 @@ int main(int argc, char const** argv)
         else
           printf("connected to the server..\n");
 
-	char* msg = "databse is updated.";
+	char* msg = "database is updated.";
 
 	while(1){
 
@@ -113,7 +111,7 @@ int main(int argc, char const** argv)
 			PQconsumeInput(dbconn);
 		}
 
-		query = PQexec(dbconn, "SELECT * FROM public.re_grp");			
+		query = PQexec(dbconn, "SELECT * FROM cc.re_grp");			
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
@@ -143,7 +141,7 @@ int main(int argc, char const** argv)
 		
 		PQclear(query);
 
-		query = PQexec(dbconn, "SELECT * FROM public.dispatcher");
+		query = PQexec(dbconn, "SELECT * FROM cc.dispatcher");
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
