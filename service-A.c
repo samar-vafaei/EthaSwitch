@@ -87,7 +87,7 @@ int main(int argc, char const** argv)
         else
           printf("connected to the server..\n");
 
-	char* msg = "database is updated.";
+	char* msg = "8:database,2:is,7:updated";
 
 	while(1){
 
@@ -111,7 +111,7 @@ int main(int argc, char const** argv)
 			PQconsumeInput(dbconn);
 		}
 
-		query = PQexec(dbconn, "SELECT * FROM cc.re_grp");			
+		query = PQexec(dbconn, "SELECT * FROM public.re_grp");			
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
@@ -141,7 +141,7 @@ int main(int argc, char const** argv)
 		
 		PQclear(query);
 
-		query = PQexec(dbconn, "SELECT * FROM cc.dispatcher");
+		query = PQexec(dbconn, "SELECT * FROM public.dispatcher");
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
@@ -182,7 +182,12 @@ int main(int argc, char const** argv)
 		//system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_re_grp");
 		//system("kamcmd -s udp:172.18.0.2:3000 htable.reload ha_dispatcher");
 
-		write(sockfd, msg, strlen(msg));
+		//write(sockfd, msg, strlen(msg));
+		// Send the message to server:
+    		if(send(sockfd, msg, strlen(msg), 0) < 0){
+        		printf("Unable to send message\n");
+        		return -1;
+      		}
 	}
 
 	fprintf(stderr, "Done.\n");
