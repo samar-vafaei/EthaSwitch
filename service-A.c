@@ -111,7 +111,7 @@ int main(int argc, char const** argv)
 			PQconsumeInput(dbconn);
 		}
 
-		query = PQexec(dbconn, "SELECT * FROM public.re_grp");			
+		query = PQexec(dbconn, "SELECT reg_exp, group_id FROM public.re_grp");			
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
@@ -125,9 +125,11 @@ int main(int argc, char const** argv)
 		// fp = fopen("/etc/kamailio/dbtext/re_grp_temp", "w");
 		fp = fopen("/etc/kamailio/dbtext/re_grp", "w");
 
-		for (i = 0; i < cols; i++) {
+		/*for (i = 0; i < cols; i++) {
 			fprintf(fp,"%s ", PQfname(query, i));
-		}
+		}*/
+
+		fprintf(fp,"%s ", "reg_exp(string) group_id(int)");
 		fprintf(fp,"\n");
 
 		for (i = 0; i < rows; i++) {
@@ -141,7 +143,7 @@ int main(int argc, char const** argv)
 		
 		PQclear(query);
 
-		query = PQexec(dbconn, "SELECT * FROM public.dispatcher");
+		query = PQexec(dbconn, "SELECT setid, destination, flags, priority, attrs FROM public.dispatcher");
 		if (PQresultStatus(query) != PGRES_TUPLES_OK)
 		{
 			fprintf(stderr, "Error while executing the query: %s\n", PQerrorMessage(dbconn));
@@ -155,9 +157,11 @@ int main(int argc, char const** argv)
 		// fp = fopen("/etc/kamailio/dbtext/dispatcher_temp", "w");
 		fp = fopen("/etc/kamailio/dbtext/dispatcher", "w");
 
-		for (i = 0; i < cols; i++) {
+		/*for (i = 0; i < cols; i++) {
 			fprintf(fp,"%s ", PQfname(query, i));
-		}
+		}*/
+
+		fprintf(fp,"%s ", "setid(int) destination(string) flags(int) priority(int) attrs(string)");
 		fprintf(fp,"\n");
 
 		for (i = 0; i < rows; i++) {
