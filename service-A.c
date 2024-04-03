@@ -126,7 +126,7 @@ int main(int argc, char const** argv)
 		fp = fopen("/etc/kamailio/dbtext/re_grp", "w");
 
 		for (i = 0; i < cols; i++) {
-			fprintf(fp,"%s\t", PQfname(query, i));
+			fprintf(fp,"%s ", PQfname(query, i));
 		}
 		fprintf(fp,"\n");
 
@@ -156,7 +156,7 @@ int main(int argc, char const** argv)
 		fp = fopen("/etc/kamailio/dbtext/dispatcher", "w");
 
 		for (i = 0; i < cols; i++) {
-			fprintf(fp,"%s\t", PQfname(query, i));
+			fprintf(fp,"%s ", PQfname(query, i));
 		}
 		fprintf(fp,"\n");
 
