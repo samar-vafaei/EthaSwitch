@@ -87,7 +87,7 @@ int main(int argc, char const** argv)
         else
           printf("connected to the server..\n");
 
-	char* msg = "8:database,2:is,7:updated";
+	char* msg = "7:updated";
 
 	while(1){
 
